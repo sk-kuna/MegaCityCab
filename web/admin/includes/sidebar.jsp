@@ -1,6 +1,6 @@
 <div class="sidebar">
   <div class="sidebar-header">
-    <img src="../images/logo.png" alt="MegaCity Cab" class="logo-img" />
+    
     <h2>Admin Panel</h2>
   </div>
   <nav class="sidebar-nav">
