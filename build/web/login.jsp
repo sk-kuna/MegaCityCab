@@ -4,24 +4,140 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login & Register - MegaCity Cab</title>
+    <title>Login - MegaCity Cab</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/login.css" />
+    <!-- <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/login.css" /> -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+
+    <style>
+/* General Styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #4b6cb7, #182848);
+  color: #fff;
+}
+
+.auth-container {
+  width: 90%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.logo img {
+  width: 80px;
+}
+
+.logo h1 {
+  font-size: 24px;
+  margin: 10px 0;
+}
+
+/* Form Styles */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.form-group {
+  position: relative;
+  width: 100%;
+  margin: 15px 0;
+}
+
+.form-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 45px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #0d0e0d;
+  outline: none;
+  box-sizing: border-box;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #ddd;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(90deg, #ff7eb3, #ff758c);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #ff758c, #ff7eb3);
+}
+
+.error-message {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4b5c;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch-form {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.switch-form a {
+  color: #ff7eb3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.switch-form a:hover {
+  text-decoration: underline;
+}
+
+
+    </style>
   </head>
   <body>
     <div class="auth-container">
       <!-- Login Form -->
       <div class="form-container" id="loginForm">
-        <h2>Welcome Back</h2>
-        <p class="subtitle">Please login to continue</p>
+        <div class="logo">
+          <h1>MegaCity Cab</h1>
+        </div>
 
         <% if (request.getAttribute("error") != null) { %>
         <div class="error-message">
@@ -51,7 +167,7 @@
             />
           </div>
 
-          <div class="form-group">
+          <div class="form-group select-group">
             <i class="fas fa-users"></i>
             <select name="userType" required>
               <option value="">Select User Type</option>
@@ -61,13 +177,11 @@
             </select>
           </div>
 
-          <button type="submit" class="submit-btn">
-            <i class="fas fa-sign-in-alt"></i> Login
-          </button>
+          <button type="submit" class="submit-btn">Login</button>
         </form>
         <p class="switch-form">
           Don't have an account?
-          <a href="#" onclick="toggleForm('register')">Register here</a>
+          <a href="#" onclick="toggleForm('register')">Register</a>
         </p>
       </div>
 

@@ -25,30 +25,94 @@ public class BookingServlet extends HttpServlet {
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
         
-        response.setContentType("text/plain;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        
-        if (action == null || action.trim().isEmpty()) {
-            out.write("error: Missing action parameter");
+        // Check if user is logged in
+        HttpSession session = request.getSession();
+        if (session.getAttribute("userId") == null) {
+            response.sendRedirect("login.jsp?error=Please login to book a ride");
             return;
         }
+
+        String action = request.getParameter("action");
         
-        try {
-            switch(action) {
-                case "assign":
-                    assignDriver(request, response);
-                    break;
-                case "updateStatus":
-                    updateBookingStatus(request, response);
-                    break;
-                default:
-                    createBooking(request, response);
+        if ("book".equals(action)) {
+            try {
+                // Get user ID from session
+                int customerId = (int) session.getAttribute("userId");
+                
+                // Get form parameters
+                String pickupLocation = request.getParameter("pickup_location");
+                String dropoffLocation = request.getParameter("dropoff_location");
+                String pickupTime = request.getParameter("pickup_time");
+                int passengerCount = Integer.parseInt(request.getParameter("passenger_count"));
+                String vehicleType = request.getParameter("vehicle_type");
+                double estimatedPrice = Double.parseDouble(request.getParameter("estimated_price"));
+                
+                // Validate inputs
+                if (pickupLocation == null || dropoffLocation == null || 
+                    pickupTime == null || vehicleType == null) {
+                    request.setAttribute("error", "All fields are required");
+                    request.getRequestDispatcher("customer/book-ride.jsp").forward(request, response);
+                    return;
+                }
+
+                Connection conn = DBConnection.getConnection();
+                String sql = "INSERT INTO bookings (customer_id, pickup_location, dropoff_location, " +
+                            "booking_time, pickup_time, status, passenger_count, vehicle_type, estimated_price) " +
+                            "VALUES (?, ?, ?, NOW(), ?, 'PENDING', ?, ?, ?)";
+                
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, customerId);
+                stmt.setString(2, pickupLocation);
+                stmt.setString(3, dropoffLocation);
+                stmt.setString(4, pickupTime.replace('T', ' '));
+                stmt.setInt(5, passengerCount);
+                stmt.setString(6, vehicleType);
+                stmt.setDouble(7, estimatedPrice);
+                
+                int result = stmt.executeUpdate();
+                
+                if(result > 0) {
+                    response.sendRedirect("customer/book-ride.jsp?success=true");
+                } else {
+                    request.setAttribute("error", "Failed to book ride");
+                    request.getRequestDispatcher("customer/book-ride.jsp").forward(request, response);
+                }
+                
+                stmt.close();
+                conn.close();
+                
+            } catch(NumberFormatException e) {
+                request.setAttribute("error", "Invalid number format");
+                request.getRequestDispatcher("customer/book-ride.jsp").forward(request, response);
+            } catch(SQLException e) {
+                request.setAttribute("error", "Database error: " + e.getMessage());
+                request.getRequestDispatcher("customer/book-ride.jsp").forward(request, response);
             }
-        } catch (Exception e) {
-            out.write("error: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            response.setContentType("text/plain;charset=UTF-8");
+            PrintWriter out = response.getWriter();
+            
+            if (action == null || action.trim().isEmpty()) {
+                out.write("error: Missing action parameter");
+                return;
+            }
+            
+            try {
+                switch(action) {
+                    case "assign":
+                        assignDriver(request, response);
+                        break;
+                    case "updateStatus":
+                        updateBookingStatus(request, response);
+                        break;
+                    default:
+                        createBooking(request, response);
+                }
+            } catch (Exception e) {
+                out.write("error: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
     
