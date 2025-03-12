@@ -1,0 +1,126 @@
+.active-rides-content {
+  padding: 2rem;
+}
+
+.rides-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.no-rides {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.no-rides i {
+  font-size: 3rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.ride-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ride-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.customer-info {
+  margin-bottom: 1rem;
+}
+
+.customer-info p {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.location {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.route-line {
+  position: absolute;
+  left: 7px;
+  top: 25px;
+  bottom: 25px;
+  width: 2px;
+  background: #ddd;
+}
+
+.pickup {
+  color: #28a745;
+}
+.dropoff {
+  color: #dc3545;
+}
+
+.ride-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+.start-btn {
+  background: #28a745;
+  color: white;
+}
+
+.complete-btn {
+  background: #007bff;
+  color: white;
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.directions-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .ride-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

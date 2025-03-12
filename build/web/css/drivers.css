@@ -1,0 +1,73 @@
+.drivers-content {
+  padding: 2rem;
+}
+
+.drivers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.add-driver-btn {
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.driver-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.driver-filters input,
+.driver-filters select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.rating i {
+  color: #ffd700;
+}
+
+.status {
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.status.online {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.offline {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status.busy {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.contact-info {
+  font-size: 0.9rem;
+}
+
+/* ...existing modal styles... */
