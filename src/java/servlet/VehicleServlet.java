@@ -7,149 +7,90 @@ import java.sql.*;
 import util.DBConnection;
 
 public class VehicleServlet extends HttpServlet {
-    
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        if ("get".equals(action)) {
+        if ("get".equals(request.getParameter("action"))) {
             getVehicleDetails(request, response);
         }
     }
-    
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        switch(action) {
-            case "add":
-                addVehicle(request, response);
-                break;
-            case "edit":
-                updateVehicle(request, response);
-                break;
-            case "delete":
-                deleteVehicle(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        }
-    }
-    
+
     private void getVehicleDetails(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
+        response.setContentType("application/json");
+        PrintWriter out = response.getWriter();
         
         try {
+            int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM vehicles WHERE vehicle_id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM vehicles WHERE vehicle_id = ?");
             stmt.setInt(1, vehicleId);
             ResultSet rs = stmt.executeQuery();
             
-            StringBuilder html = new StringBuilder("{");
-            if(rs.next()) {
-                html.append("\"registrationNumber\":\"").append(rs.getString("registration_number")).append("\",");
-                html.append("\"model\":\"").append(rs.getString("model")).append("\",");
-                html.append("\"capacity\":").append(rs.getInt("capacity")).append(",");
-                html.append("\"status\":\"").append(rs.getString("status")).append("\"");
+            if (rs.next()) {
+                // Create simple JSON object
+                out.print("{");
+                out.print("\"id\":" + rs.getInt("vehicle_id") + ",");
+                out.print("\"registrationNumber\":\"" + rs.getString("registration_number") + "\",");
+                out.print("\"model\":\"" + rs.getString("model") + "\",");
+                out.print("\"capacity\":" + rs.getInt("capacity"));
+                out.print("}");
             }
-            html.append("}");
-            
-            response.setContentType("text/plain");
-            response.getWriter().write(html.toString());
             
             rs.close();
             stmt.close();
             conn.close();
-            
-        } catch(SQLException e) {
-            throw new ServletException(e);
+        } catch (Exception e) {
+            out.print("{\"error\":\"Error loading vehicle\"}");
         }
     }
-    
-    private void addVehicle(HttpServletRequest request, HttpServletResponse response)
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String registrationNumber = request.getParameter("registrationNumber");
-        String model = request.getParameter("model");
-        int capacity = Integer.parseInt(request.getParameter("capacity"));
-        String status = request.getParameter("status");
+        String action = request.getParameter("action");
+        PrintWriter out = response.getWriter();
         
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO vehicles (registration_number, model, capacity, status) VALUES (?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
-            stmt.setString(1, registrationNumber);
-            stmt.setString(2, model);
-            stmt.setInt(3, capacity);
-            stmt.setString(4, status);
-            
-            int result = stmt.executeUpdate();
-            
-            response.setContentType("text/plain");
-            response.getWriter().write(result > 0 ? "success" : "error");
-            
-            stmt.close();
-            conn.close();
-            
-        } catch(SQLException e) {
-            response.getWriter().write("error: " + e.getMessage());
-        }
-    }
-    
-    private void updateVehicle(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
-        String registrationNumber = request.getParameter("registrationNumber");
-        String model = request.getParameter("model");
-        int capacity = Integer.parseInt(request.getParameter("capacity"));
-        String status = request.getParameter("status");
-        
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE vehicles SET registration_number=?, model=?, capacity=?, status=? WHERE vehicle_id=?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
-            stmt.setString(1, registrationNumber);
-            stmt.setString(2, model);
-            stmt.setInt(3, capacity);
-            stmt.setString(4, status);
-            stmt.setInt(5, vehicleId);
-            
-            int result = stmt.executeUpdate();
-            
-            response.setContentType("text/plain");
-            response.getWriter().write(result > 0 ? "success" : "error");
-            
-            stmt.close();
-            conn.close();
-            
-        } catch(SQLException e) {
-            response.getWriter().write("error: " + e.getMessage());
-        }
-    }
-    
-    private void deleteVehicle(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
-        
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "DELETE FROM vehicles WHERE vehicle_id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
-            stmt.setInt(1, vehicleId);
-            int result = stmt.executeUpdate();
-            
-            response.setContentType("text/plain");
-            response.getWriter().write(result > 0 ? "success" : "error");
-            
-            stmt.close();
-            conn.close();
-            
-        } catch(SQLException e) {
-            response.getWriter().write("error: " + e.getMessage());
+        try (Connection conn = DBConnection.getConnection()) {
+            switch (action) {
+                case "add":
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "INSERT INTO vehicles (registration_number, model, capacity) VALUES (?, ?, ?)")) {
+                        stmt.setString(1, request.getParameter("registrationNumber"));
+                        stmt.setString(2, request.getParameter("model"));
+                        stmt.setInt(3, Integer.parseInt(request.getParameter("capacity")));
+                        stmt.executeUpdate();
+                        out.write("success");
+                    }
+                    break;
+                    
+                case "edit":
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "UPDATE vehicles SET registration_number=?, model=?, capacity=? WHERE vehicle_id=?")) {
+                        stmt.setString(1, request.getParameter("registrationNumber"));
+                        stmt.setString(2, request.getParameter("model"));
+                        stmt.setInt(3, Integer.parseInt(request.getParameter("capacity")));
+                        stmt.setInt(4, Integer.parseInt(request.getParameter("vehicleId")));
+                        stmt.executeUpdate();
+                        out.write("success");
+                    }
+                    break;
+                    
+                case "delete":
+                    try {
+                        PreparedStatement stmt = conn.prepareStatement("DELETE FROM vehicles WHERE vehicle_id = ?");
+                        stmt.setInt(1, Integer.parseInt(request.getParameter("vehicleId")));
+                        int result = stmt.executeUpdate();
+                        out.print(result > 0 ? "success" : "error");
+                        stmt.close();
+                    } catch (Exception e) {
+                        out.print("error");
+                    }
+                    break;
+                    
+                default:
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
+            }
+        } catch (SQLException e) {
+            out.write("error: " + e.getMessage());
         }
     }
 }
