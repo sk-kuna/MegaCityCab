@@ -10,6 +10,8 @@ public class User {
     private String phone;
     private String nic;
     private String userType;
+
+    
     
     // Generate getters and setters
     public int getUserId() {

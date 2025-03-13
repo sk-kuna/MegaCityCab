@@ -8,15 +8,17 @@
     }
     
     int driverId = (int) session.getAttribute("userId");
-    Connection conn = DBConnection.getConnection();
-    
-    // Fetch driver stats
-    PreparedStatement stmt = conn.prepareStatement(
-        "SELECT status FROM driver_details WHERE driver_id = ?"
-    );
-    stmt.setInt(1, driverId);
-    ResultSet driverRs = stmt.executeQuery();
-    String driverStatus = driverRs.next() ? driverRs.getString("status") : "OFFLINE";
+    Connection conn = null;
+    try {
+        conn = DBConnection.getConnection();
+        
+        // Fetch driver stats
+        PreparedStatement stmt = conn.prepareStatement(
+            "SELECT status FROM driver_details WHERE driver_id = ?"
+        );
+        stmt.setInt(1, driverId);
+        ResultSet driverRs = stmt.executeQuery();
+        String driverStatus = driverRs.next() ? driverRs.getString("status") : "OFFLINE";
 %>
 <!DOCTYPE html>
 <html>
@@ -351,6 +353,9 @@ input:checked + .slider:before {
     </body>
 </html>
 <%
-    // Close all database resources
-    conn.close();
+    } finally {
+        if (conn != null) {
+            try { conn.close(); } catch (SQLException e) { /* ignore */ }
+        }
+    }
 %>
