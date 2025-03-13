@@ -7,18 +7,22 @@
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/servlet/DriverServlet.java</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/js/script.js</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/servlet/LoginServlet.java</file>
+            <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/customer/dashboard.jsp</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/index.html</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/css/driver.css</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/servlet/BookingServlet.java</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/css/style.css</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/driver/dashboard.jsp</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/css/home.css</file>
+            <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/admin/bookings.jsp</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/admin/users.jsp</file>
+            <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/servlet/ReportServlet.java</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/js/bookings.js</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/customer/my-rides.jsp</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/model/Booking.java</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/login.jsp</file>
             <file>file:/E:/01.ICBT/Assignments/MegaCityCab/src/java/util/DBConnection.java</file>
+            <file>file:/E:/01.ICBT/Assignments/MegaCityCab/web/customer/book-ride.jsp</file>
         </group>
     </open-files>
 </project-private>

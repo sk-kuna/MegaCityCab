@@ -11,9 +11,7 @@ public class DriverServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         
-        if ("getCurrentStatus".equals(action)) {
-            getCurrentStatus(request, response);
-        } else if ("get".equals(action)) {
+        if ("get".equals(action)) {
             getDriverDetails(request, response);
         }
     }
@@ -22,53 +20,18 @@ public class DriverServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         
-        if ("updateStatus".equals(action)) {
-            HttpSession session = request.getSession();
-            int driverId = (int) session.getAttribute("userId");
-            String status = request.getParameter("status").toUpperCase(); // Ensure uppercase
-            
-            try {
-                // Validate status value
-                if (!status.equals("ONLINE") && !status.equals("OFFLINE")) {
-                    response.getWriter().write("error: Invalid status value");
-                    return;
-                }
-
-                Connection conn = DBConnection.getConnection();
-                String sql = "UPDATE driver_details SET status = ? WHERE driver_id = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, status);
-                stmt.setInt(2, driverId);
-                
-                int result = stmt.executeUpdate();
-                
-                response.setContentType("text/plain");
-                PrintWriter out = response.getWriter();
-                
-                if (result > 0) {
-                    out.write("success");
-                } else {
-                    out.write("error: No driver found with ID " + driverId);
-                }
-                
-                stmt.close();
-                conn.close();
-                
-            } catch (SQLException e) {
-                response.getWriter().write("error: " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            switch(action) {
-                case "add":
-                    addDriver(request, response);
-                    break;
-                case "edit":
-                    updateDriver(request, response);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            }
+        switch(action) {
+            case "add":
+                addDriver(request, response);
+                break;
+            case "edit":
+                updateDriver(request, response);
+                break;
+            case "delete":
+                deleteDriver(request, response);
+                break;
+            default:
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
     
@@ -78,80 +41,58 @@ public class DriverServlet extends HttpServlet {
         
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT d.* FROM driver_details d WHERE d.driver_id = ?";
+            String sql = "SELECT * FROM users WHERE user_id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
             
-            StringBuilder html = new StringBuilder("{");
-            if(rs.next()) {
-                html.append("\"licenseNumber\":\"").append(rs.getString("license_number")).append("\",");
-                html.append("\"experience\":").append(rs.getInt("experience_years")).append(",");
-                html.append("\"status\":\"").append(rs.getString("status")).append("\"");
-            }
-            html.append("}");
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter out = response.getWriter();
             
-            response.setContentType("text/plain");
-            response.getWriter().write(html.toString());
+            if(rs.next()) {
+                String json = "{" +
+                    "\"id\":" + rs.getInt("user_id") + "," +
+                    "\"name\":\"" + rs.getString("name") + "\"," +
+                    "\"email\":\"" + rs.getString("email") + "\"," +
+                    "\"phone\":\"" + (rs.getString("phone") != null ? rs.getString("phone") : "") + "\"" +
+                    "}";
+                out.write(json);
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                out.write("{\"error\":\"Driver not found\"}");
+            }
             
             rs.close();
             stmt.close();
             conn.close();
             
         } catch(SQLException e) {
-            throw new ServletException(e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
         }
     }
     
     private void addDriver(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String licenseNumber = request.getParameter("licenseNumber");
-        int experience = Integer.parseInt(request.getParameter("experience"));
-        String status = request.getParameter("status");
-        
         try {
             Connection conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
-            try {
-                // First, create user entry
-                String userSql = "INSERT INTO users (username, password, email, name, phone, user_type) " +
-                               "VALUES (?, ?, ?, ?, ?, 'DRIVER')";
-                PreparedStatement userStmt = conn.prepareStatement(userSql, Statement.RETURN_GENERATED_KEYS);
-                
-                userStmt.setString(1, licenseNumber); // Using license number as username
-                userStmt.setString(2, "changepass123"); // Default password
-                userStmt.setString(3, request.getParameter("email"));
-                userStmt.setString(4, request.getParameter("name"));
-                userStmt.setString(5, request.getParameter("phone"));
-                
-                userStmt.executeUpdate();
-                
-                // Get the generated user ID
-                ResultSet rs = userStmt.getGeneratedKeys();
-                if(rs.next()) {
-                    int driverId = rs.getInt(1);
-                    
-                    // Then create driver details
-                    String driverSql = "INSERT INTO driver_details (driver_id, license_number, experience_years, rating, status) " +
-                                     "VALUES (?, ?, ?, 0.00, ?)";
-                    PreparedStatement driverStmt = conn.prepareStatement(driverSql);
-                    
-                    driverStmt.setInt(1, driverId);
-                    driverStmt.setString(2, licenseNumber);
-                    driverStmt.setInt(3, experience);
-                    driverStmt.setString(4, status);
-                    
-                    driverStmt.executeUpdate();
-                    conn.commit();
-                    
-                    response.setContentType("text/plain");
-                    response.getWriter().write("success");
-                }
-                
-            } catch(SQLException e) {
-                conn.rollback();
-                throw e;
-            }
+            String sql = "INSERT INTO users (username, password, email, name, phone, user_type) " +
+                         "VALUES (?, ?, ?, ?, ?, 'DRIVER')";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            
+            stmt.setString(1, request.getParameter("email")); // Using email as username
+            stmt.setString(2, "changepass123"); // Default password
+            stmt.setString(3, request.getParameter("email"));
+            stmt.setString(4, request.getParameter("name"));
+            stmt.setString(5, request.getParameter("phone"));
+            
+            int result = stmt.executeUpdate();
+            
+            response.setContentType("text/plain");
+            response.getWriter().write(result > 0 ? "success" : "error: Failed to add driver");
+            
+            stmt.close();
             conn.close();
             
         } catch(SQLException e) {
@@ -163,45 +104,23 @@ public class DriverServlet extends HttpServlet {
     private void updateDriver(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int driverId = Integer.parseInt(request.getParameter("driverId"));
-        String licenseNumber = request.getParameter("licenseNumber");
-        int experience = Integer.parseInt(request.getParameter("experience"));
-        String status = request.getParameter("status");
         
         try {
             Connection conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
-            try {
-                // Update driver details
-                String sql = "UPDATE driver_details SET license_number = ?, experience_years = ?, status = ? " +
-                           "WHERE driver_id = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                
-                stmt.setString(1, licenseNumber);
-                stmt.setInt(2, experience);
-                stmt.setString(3, status);
-                stmt.setInt(4, driverId);
-                
-                stmt.executeUpdate();
-                
-                // Update user details if provided
-                if(request.getParameter("name") != null && request.getParameter("email") != null) {
-                    String userSql = "UPDATE users SET name = ?, email = ?, phone = ? WHERE user_id = ?";
-                    PreparedStatement userStmt = conn.prepareStatement(userSql);
-                    userStmt.setString(1, request.getParameter("name"));
-                    userStmt.setString(2, request.getParameter("email"));
-                    userStmt.setString(3, request.getParameter("phone"));
-                    userStmt.setInt(4, driverId);
-                    userStmt.executeUpdate();
-                }
-                
-                conn.commit();
-                response.setContentType("text/plain");
-                response.getWriter().write("success");
-                
-            } catch(SQLException e) {
-                conn.rollback();
-                throw e;
-            }
+            String sql = "UPDATE users SET name = ?, email = ?, phone = ? WHERE user_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            
+            stmt.setString(1, request.getParameter("name"));
+            stmt.setString(2, request.getParameter("email"));
+            stmt.setString(3, request.getParameter("phone"));
+            stmt.setInt(4, driverId);
+            
+            int result = stmt.executeUpdate();
+            
+            response.setContentType("text/plain");
+            response.getWriter().write(result > 0 ? "success" : "error: Failed to update driver");
+            
+            stmt.close();
             conn.close();
             
         } catch(SQLException e) {
@@ -210,34 +129,27 @@ public class DriverServlet extends HttpServlet {
         }
     }
 
-    private void getCurrentStatus(HttpServletRequest request, HttpServletResponse response)
+    private void deleteDriver(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        int driverId = (int) session.getAttribute("userId");
+        int driverId = Integer.parseInt(request.getParameter("driverId"));
         
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT status FROM driver_details WHERE driver_id = ?";
+            String sql = "DELETE FROM users WHERE user_id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, driverId);
             
-            ResultSet rs = stmt.executeQuery();
-            String status = "OFFLINE"; // Default status
+            int result = stmt.executeUpdate();
             
-            if (rs.next()) {
-                status = rs.getString("status");
-            }
+            response.setContentType("text/plain");
+            response.getWriter().write(result > 0 ? "success" : "error: Driver not found");
             
-            response.setContentType("text/plain;charset=UTF-8");
-            response.getWriter().write(status);
-            
-            rs.close();
             stmt.close();
             conn.close();
             
-        } catch (SQLException e) {
-            response.getWriter().write("OFFLINE");
-            e.printStackTrace();
+        } catch(SQLException e) {
+            response.setContentType("text/plain");
+            response.getWriter().write("error: " + e.getMessage());
         }
     }
 }
